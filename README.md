@@ -12,11 +12,12 @@ This is a macro used to search for a number of keywords in the config file (with
 Inputs (via InputBox):
 1. Config file path
 2. Search Range (e.g. "A1:B2" Range in Excel)
-3. Output column (e.g. "K")
+3. Start of output columns (this should be the first free column, multiple columns will be used) (e.g. "K").
+4. Whether to use equal scoring for each keyword, or weighted scoring (weights will be added in descending order of each word in the config file). The final score would be used to sort the results.
 
 All 3 inputs are compulsory.
 
 ## Future developments
 ```FindKeyword.bas```
 ---------------------
-1. Separate each keyword found into different columns, which would allow for counting of keywords and sort by relevancy.
+1. Automatic detection of free column for output.
