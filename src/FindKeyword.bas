@@ -22,11 +22,8 @@ Attribute FindKeyword.VB_ProcData.VB_Invoke_Func = " \n14"
         Exit Sub
     End If
     
-    ResultColumnString = InputBox("Please enter the column you would like search results to be in (e.g. 'K')", "Result Column", "I")
-    If StrPtr(ResultColumnString) = 0 Or StrComp(ResultColumnString, "") = 0 Then
-        MsgBox Prompt:="Process cancelled.", Title:="Abort"
-        Exit Sub
-    End If
+    ' Determine empty column for output
+    ResultColumnString = GetFirstEmptyColumnName()
     ScoreColumnString = ShiftToNextColumn(ResultColumnString)
 
     Set SearchRange = ActiveSheet.Range(SearchRangeString)
@@ -85,10 +82,10 @@ Attribute FindKeyword.VB_ProcData.VB_Invoke_Func = " \n14"
     
     ActiveSheet.Columns(ResultColumnString & ":" & ResultColumnString).EntireColumn.AutoFit
     If Not ActiveSheet.AutoFilterMode Then
-        ActiveSheet.Range("A1").AutoFilter
+        ActiveSheet.Rows("1:1").AutoFilter
     Else
-        ActiveSheet.Range("A1").AutoFilter
-        ActiveSheet.Range("A1").AutoFilter
+        ActiveSheet.Rows("1:1").AutoFilter
+        ActiveSheet.Rows("1:1").AutoFilter
     End If
     
     With ActiveWindow
@@ -155,7 +152,27 @@ Private Function ShiftToNextColumn(ColumnString As String)
 ' Find the next column address from previous
 '
 
-    ShiftToNextColumn = Replace(Replace(Range(ColumnString & "1").Offset(0, 1).Address, "1", ""), "$", "")
+    ShiftToNextColumn = GetColumnNameFromFirstCell(Range(ColumnString & "1").Offset(0, 1).Address)
+
+End Function
+
+Private Function GetFirstEmptyColumnName()
+'
+' GetFirstEmptyColumnName function
+' Find the first column name that is empty
+'
+    
+    GetFirstEmptyColumnName = GetColumnNameFromFirstCell(Cells(1, ActiveSheet.UsedRange.Columns(ActiveSheet.UsedRange.Columns.Count).Column + 1).Address)
+    
+End Function
+
+Private Function GetColumnNameFromFirstCell(CellString As String)
+'
+' GetColumnNameFromFirstCell function
+' Extract the column name (e.g. 'K') from cell address of first cell (e.g. 'K1' or '$K$1')
+'
+
+    GetColumnNameFromFirstCell = Replace(Replace(CellString, "1", ""), "$", "")
 
 End Function
 
