@@ -20,7 +20,27 @@ Inputs (via InputBox / MsgBox):
 
 All 3 inputs are compulsory.
 
-## Future developments
-```FindKeyword.bas```
----------------------
+```MergeEmptyVertical.bas```
+----------------------------
+This is a macro used to merge empty cells in a column with the nearest non-empty cell above.
 
+Additionally, can output the number of rows merged for each non-empty cell to a specified column (requires the non-empty cell to be on same row, as in below screenshot).
+
+<img src="https://github.com/adrielyeung/macro-workbook/blob/main/img/MergeEmptyVertical_before.png" alt="MergeEmptyVertical_before" width="25%" height="25%">
+<img src="https://github.com/adrielyeung/macro-workbook/blob/main/img/MergeEmptyVertical_after.png" alt="MergeEmptyVertical_after" width="25%" height="25%">
+
+```WordUtil.bas```
+------------------
+```CreateWordDoc()```
+
+Creates a Word document.
+
+```ReplaceTagsWithContent()```
+
+Fill content into a Word template by replacing tags ```<xxx>``` with content.
+
+Example Cover Letter template and config are provided in ```config/``` folder.
+
+Support for paragraph building with multiple sentences in same category (```P<xxx>``` tags in Excel config). This is done by extracting stock phrases from PhraseConfig sheet with a random starting phrase, and inserting the config data into the stock phrases.
+
+## Future developments
