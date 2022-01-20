@@ -22,12 +22,12 @@ All 3 inputs are compulsory.
 
 ```MergeEmptyVertical.bas```
 ----------------------------
-This is a macro used to merge empty cells in a column with the nearest non-empty cell above.
+This is a macro used to merge empty cells in each column in a selected range with the nearest non-empty cell above.
 
-Additionally, can output the number of rows merged for each non-empty cell to a specified column (requires the non-empty cell to be on same row, as in below screenshot).
+Additionally, can output the number of rows merged for each non-empty cell to a specified column (requires the non-empty cell to be on same row, as in column "D" in below screenshot).
 
-<img src="https://github.com/adrielyeung/macro-workbook/blob/main/img/MergeEmptyVertical_before.png" alt="MergeEmptyVertical_before" width="25%" height="25%">
-<img src="https://github.com/adrielyeung/macro-workbook/blob/main/img/MergeEmptyVertical_after.png" alt="MergeEmptyVertical_after" width="25%" height="25%">
+<img src="https://github.com/adrielyeung/macro-workbook/blob/main/img/MergeEmptyVertical_before.png" alt="MergeEmptyVertical_before" width="50%" height="50%">
+<img src="https://github.com/adrielyeung/macro-workbook/blob/main/img/MergeEmptyVertical_after.png" alt="MergeEmptyVertical_after" width="50%" height="50%">
 
 ```WordUtil.bas```
 ------------------
