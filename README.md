@@ -43,4 +43,11 @@ Example Cover Letter template and config are provided in ```config/``` folder.
 
 Support for paragraph building with multiple sentences in same category (```P<xxx>``` tags in Excel config). This is done by extracting stock phrases from PhraseConfig sheet with a random starting phrase, and inserting the config data into the stock phrases.
 
+```FillExcelForm.bas```
+-----------------------
+Fills highlighted cells in an Excel form, searching within a specified area for yellow colour (currently set at value of 13431551).
+
 ## Future developments
+WordUtil.bas: Batch processing of config (maybe in CSV format).
+FillExcelForm.bas: Create another sub for generating PDF copy and attaching to email.
+
