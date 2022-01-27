@@ -26,7 +26,12 @@ This is a macro used to merge empty cells in each column in a selected range wit
 
 Additionally, can output the number of rows merged for each non-empty cell to a specified column (requires the non-empty cell to be on same row, as in column "D" in below screenshot).
 
+Before:
+
 <img src="https://github.com/adrielyeung/macro-workbook/blob/main/img/MergeEmptyVertical_before.png" alt="MergeEmptyVertical_before" width="50%" height="50%">
+
+After:
+
 <img src="https://github.com/adrielyeung/macro-workbook/blob/main/img/MergeEmptyVertical_after.png" alt="MergeEmptyVertical_after" width="50%" height="50%">
 
 ```WordUtil.bas```
@@ -47,7 +52,58 @@ Support for paragraph building with multiple sentences in same category (```P<xx
 -----------------------
 Fills highlighted cells in an Excel form, searching within a specified area for yellow colour (currently set at value of 13431551).
 
+Before:
+
+<img src="https://github.com/adrielyeung/macro-workbook/blob/main/img/FillExcelForm_Before.png" alt="FillExcelForm_Before" width="50%" height="50%">
+
+After:
+
+<img src="https://github.com/adrielyeung/macro-workbook/blob/main/img/FillExcelForm_After.png" alt="FillExcelForm_After" width="50%" height="50%">
+
+```CopyColumnToNext.bas```
+--------------------------
+Copy the content of rightmost filled column to the next, increasing the header by 1 if it is a number/date.
+
+Option to select:
+1. Number of times to copy
+2. If copy > 1 times, copy header only except last time (Useful for skipping through a few days, e.g. weekend)
+
+Before:
+
+<img src="https://github.com/adrielyeung/macro-workbook/blob/main/img/CopyColumnToNext_Before.png" alt="CopyColumnToNext_Before" width="50%" height="50%">
+
+After:
+
+- Case 1: Copy 1 time
+  
+  Prompt:
+  
+  Type 1 to copy 1 time
+  
+  <img src="https://github.com/adrielyeung/macro-workbook/blob/main/img/CopyColumnToNext_Case1.png" alt="CopyColumnToNext_Case1" width="50%" height="50%">
+  
+  After:
+  
+  <img src="https://github.com/adrielyeung/macro-workbook/blob/main/img/CopyColumnToNext_Case1_After.png" alt="CopyColumnToNext_Case1_After" width="50%" height="50%">
+  
+- Case 2: Copy 3 times, skipping except the last time (e.g. skip through the weekend)
+  
+  Prompt:
+  
+  Type 3 to copy 3 times
+  
+  <img src="https://github.com/adrielyeung/macro-workbook/blob/main/img/CopyColumnToNext_Case2_1.png" alt="CopyColumnToNext_Case2_1" width="50%" height="50%">
+  
+  Select "Yes" to set up the header (date) only
+  
+  <img src="https://github.com/adrielyeung/macro-workbook/blob/main/img/CopyColumnToNext_Case2_2.png" alt="CopyColumnToNext_Case2_2" width="50%" height="50%">
+  
+  After:
+  
+  <img src="https://github.com/adrielyeung/macro-workbook/blob/main/img/CopyColumnToNext_Case2_After.png" alt="CopyColumnToNext_Case2_After" width="50%" height="50%">
+
 ## Future developments
 WordUtil.bas: Batch processing of config (maybe in CSV format).
+
 FillExcelForm.bas: Create another sub for generating PDF copy and attaching to email.
 
