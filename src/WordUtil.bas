@@ -17,6 +17,55 @@ Sub CreateWordDoc()
 
 End Sub
 
+Sub Batch_ReplaceTagsWithContent()
+'
+' Batch_ReplaceTagsWithContent Sub
+' Batch calling of Sub ReplaceTagsWithContent(), finding for records in path ListingPath
+' with PrepareStatus = "Prepare"
+' And changing the basic config for each record
+'
+
+'
+    Dim ListingPath As Range, PrepareStatus As Range, Status As Range, BatchConfig As Range, Config As Range
+    Dim TemplateWb As Workbook, ListingWb As Workbook
+    Dim i As Integer
+    
+    ' Set TemplateWb as the Excel holding the template config
+    Set TemplateWb = ActiveWorkbook
+    ' ListingPath is the path of the batch listings
+    Set ListingPath = TemplateWb.Names("ListingPath").RefersToRange
+    ' BatchConfig is the cells in the Template Excel to be updated for each batch run
+    Set BatchConfig = TemplateWb.Names("BatchConfig").RefersToRange
+    ' ListingWb is the batch listings Excel
+    Set ListingWb = Workbooks.Open(ListingPath)
+    ' PrepareStatus are the cells holding the processing status
+    Set PrepareStatus = ListingWb.Names("PrepareStatus").RefersToRange
+    
+    For Each Status In PrepareStatus
+        ' Extract all "Prepare" statis
+        If Status.Value = "Prepare" Then
+            i = Status.Column - 1
+            
+            ' Copy each value in ListingWb to TemplateWb
+            For Each Config In BatchConfig
+                Config.Value = Status.Offset(0, -i).Value
+                i = i - 1
+                If i < 0 Then
+                    MsgBox "There are more config cells than provided. Please check.", , "Batch failed"
+                    Exit Sub
+                End If
+            Next Config
+            TemplateWb.Activate
+            ' Call the ReplaceTagsWithContent Sub
+            ReplaceTagsWithContent
+            Status.Value = "Done"
+        ' Hit the end of file, finish
+        ElseIf Status.Value = "End" Then
+            Exit For
+        End If
+    Next Status
+End Sub
+
 Sub ReplaceTagsWithContent()
 '
 ' ReplaceTagsWithContent Sub
@@ -79,9 +128,9 @@ Sub ReplaceTagsWithContent()
     End If
     
     If RangeExists("CompName") Then
-        NewFile = Prefix & Range("CompName").Value & "_" & Format(Now(), "yyyymmdd_hhmmss") & ".docx"
+        NewFile = Prefix & "_" & Range("CompName").Value & "_" & Format(Now(), "yyyymmdd_hhmmss") & ".docx"
     Else
-        NewFile = Prefix & Format(Now(), "yyyymmdd_hhmmss") & ".docx"
+        NewFile = Prefix & "_" & Format(Now(), "yyyymmdd_hhmmss") & ".docx"
     End If
     
     FileCopy Template, Direc & NewFile
