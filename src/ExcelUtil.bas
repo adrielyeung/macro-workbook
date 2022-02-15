@@ -183,3 +183,40 @@ Sub MergeEmptyVertical()
     Next
 End Sub
 
+Function RangeExists(R As String) As Boolean
+' RangeExists Function
+' Test if Range R exists
+'
+    Dim Test As Range
+    On Error Resume Next
+    Set Test = ActiveSheet.Range(R)
+    RangeExists = (Err.Number = 0)
+End Function
+
+Function SheetExists(S As String, Optional Wb As Workbook) As Boolean
+' SheetExists Function
+' Test if Sheet S in Wb if given, or ActiveWorkbook if Wb not given
+'
+    Dim Test As Worksheet
+    If Wb Is Nothing Then
+        Wb = ActiveWorkbook
+    End If
+    On Error Resume Next
+    Set Test = Wb.Sheets(S)
+    SheetExists = (Not Test Is Nothing)
+End Function
+
+Function MatchLast(Lookupvalue As String, LookupRange As Range, ColumnNumber As Integer) As Long
+' MatchLast Function
+' Returns last cell row number in LookupRange, ColumnNumber'th column containing Lookupvalue
+'
+    Dim i As Long
+    For i = LookupRange.Columns(ColumnNumber).Cells.Count To 1 Step -1
+        If Lookupvalue = LookupRange.Cells(i, 1) Then
+            MatchLast = i
+            Exit Function
+        End If
+    Next i
+End Function
+
+
