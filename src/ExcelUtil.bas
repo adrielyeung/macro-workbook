@@ -45,14 +45,15 @@ Sub CopyDataToSheet()
     CopyTo.Worksheet.Activate
     CopyTo.Range(Cells(1, 1), Cells(CopyFrom.Rows.Count, CopyFrom.Columns.Count)).PasteSpecial Paste:=xlPasteAll
     
-    CopyTo.Columns.AutoFit
     CopyTo.Rows.AutoFit
     
     ' Copy formatting
     PrepareStatus.Cells(2, 1).Copy
     
-    ' Set end cell
+    ' Set end cell for "Status" and "Message" cols
     PrepareStatus.Cells(CopyFrom.Rows.Count, 1).Value = "End"
+    PrepareStatus.Cells(CopyFrom.Rows.Count - 1, 1).Offset(0, 1).Value = ""
+    PrepareStatus.Cells(CopyFrom.Rows.Count, 1).Offset(0, 1).Value = "End"
     PrepareStatus.Cells(CopyFrom.Rows.Count, 1).PasteSpecial Paste:=xlPasteFormats
     
     ' Set newly added rows with status "Prepare" until found previously done rows
