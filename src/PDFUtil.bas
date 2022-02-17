@@ -56,7 +56,7 @@ Sub Batch_ExportWordAsPDF()
         If Status.Value = "GenPDF" Then
             OutMsg = ExportWordAsPDF(Status.Offset(0, 1).Value)
             If Left(OutMsg, 1) <> "!" Then
-                Status.Value = "GenPDF"
+                Status.Value = "Done"
                 SucCount = SucCount + 1
             Else
                 FailCount = FailCount + 1
@@ -105,7 +105,10 @@ Private Function ExportWordAsPDF(Path As String) As String
     
     ChDir Direc
     
+OpenFile:
+    On Error GoTo FileError:
     WordApp.Documents.Open Path
+    On Error GoTo 0
     WordApp.Visible = False
     
     WordApp.ActiveDocument.ExportAsFixedFormat OutputFileName:= _
@@ -117,6 +120,21 @@ Private Function ExportWordAsPDF(Path As String) As String
         BitmapMissingFonts:=True, UseISO19005_1:=False
     
     ExportWordAsPDF = Direc & Filename & ".pdf"
+    WordApp.Quit
+    
+    Exit Function
+    
+FileError:
+    Do While True
+        If MsgBox("Please close all Word Documents for the program to continue." & vbNewLine & _
+            "Click [OK] to continue. Click [Cancel] to skip PDF generation for this file." & vbNewLine & _
+            Path, vbOKCancel, "Word Documents Open") = vbCancel Then
+            WordApp.Quit
+            Exit Function
+        Else
+            GoTo OpenFile
+        End If
+    Loop
 End Function
 
 

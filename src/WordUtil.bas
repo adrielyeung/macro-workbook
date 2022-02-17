@@ -198,11 +198,15 @@ Private Function ReplaceTagsWithContent() As String
     Else
         NewFile = Prefix & "_" & Format(Now(), "yyyymmdd_hhmmss") & ".docx"
     End If
-    
+
+OpenFile:
+    On Error GoTo FileError:
     FileCopy Template, Direc & NewFile
     
     ChDir Direc
+
     WordApp.Documents.Open Direc & NewFile
+    On Error GoTo 0
     WordApp.Visible = True
     
     ' Find and replace tags in Word template
@@ -391,6 +395,18 @@ Private Function ReplaceTagsWithContent() As String
     End If
     
     ReplaceTagsWithContent = Direc & NewFile
+    Exit Function
+    
+FileError:
+    Do While True
+        If MsgBox("Please close all Word Documents for the program to continue." & vbNewLine & _
+            "Click [OK] to continue. Click [Cancel] to skip generation for this file." & vbNewLine & _
+            Path, vbOKCancel, "Word Documents Open") = vbCancel Then
+            Exit Function
+        Else
+            GoTo OpenFile
+        End If
+    Loop
 End Function
 
 Private Function AddAndToList(Str As String) As String
