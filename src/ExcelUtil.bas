@@ -74,7 +74,7 @@ End Sub
 Sub CopyColumnToNext()
 '
 ' CopyColumnToNext Macro
-' Copy the content of rightmost filled column to the next,
+' Copy the content of rightmost filled non-coloured column to the next,
 ' increasing the header by 1 if it is a number/date.
 '
 ' Option to select:
@@ -84,9 +84,9 @@ Sub CopyColumnToNext()
 '
 ' Keyboard Shortcut: Ctrl+k
 '
-    Dim LastColInd As Integer, CopyTimes As Variant, HeaderVal As Variant
+    Dim LastColInd As Integer, CopyTimes As Variant
     Dim CopyHeaderOnly As String
-    Dim i As Integer
+    Dim i As Long, j As Long
     
     LastColInd = ActiveSheet.UsedRange.Columns.Count
     
@@ -104,27 +104,39 @@ Sub CopyColumnToNext()
     Else
         CopyHeaderOnly = vbYes
     End If
-        
-    HeaderVal = Cells(1, LastColInd).Value
+    
+    For j = 1 To ActiveSheet.UsedRange.Rows.Count
+        ' Check for cells with white colour
+        If Cells(j, LastColInd).EntireRow.Hidden = False And Cells(j, LastColInd).Interior.Color = 16777215 Then
+            While Len(Trim(Cells(j, LastColInd).Value)) = 0 And LastColInd > 0
+                LastColInd = LastColInd - 1
+            Wend
+            
+            Exit For
+        End If
+    Next j
     
     For i = 1 To CInt(CopyTimes)
         ' Start a new column
         LastColInd = LastColInd + 1
         
-        ' Increment header by 1
-        Cells(1, LastColInd).Value = Cells(1, LastColInd - 1).Value + 1
+        ' Increment header by 1 if not written
+        If Len(Trim(Cells(1, LastColInd).Value)) = 0 Then
+            Cells(1, LastColInd).Value = Cells(1, LastColInd - 1).Value + 1
+        End If
         
         ' Copy remaining rows
         If CopyHeaderOnly = vbNo Or i = CInt(CopyTimes) Then
-            Range(Cells(2, LastColInd), Cells(ActiveSheet.UsedRange.Rows.Count, LastColInd)).Value = _
-                Range(Cells(2, LastColInd - i), Cells(ActiveSheet.UsedRange.Rows.Count, LastColInd - i)).Value
+            For j = 2 To ActiveSheet.UsedRange.Rows.Count
+                If Cells(j, LastColInd).EntireRow.Hidden = False And Cells(j, LastColInd).Interior.Color = 16777215 Then
+                    Cells(j, LastColInd).Value = Cells(j, LastColInd - i).Value
+                End If
+            Next j
         End If
         
-        ' Autofit filled column
         ActiveSheet.Columns(LastColInd).AutoFit
     Next i
     
-    ' Save workbook
     ActiveWorkbook.Save
 End Sub
 
