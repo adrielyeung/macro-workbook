@@ -82,6 +82,22 @@ Output:
 
 End Sub
 
+Function GenPDF(Suffix As String) As String
+'
+' GenPDF Function
+' Export the ActiveSheet of ActiveWorkbook as PDF,
+' allowing for addition of suffix to the end of file name
+'
+
+'
+    ' Join the path, workbook name (removing the extension .xlsx), and add the Suffix
+    GenPDF = ActiveWorkbook.Path & "\" & Left(ActiveWorkbook.Name, InStrRev(ActiveWorkbook.Name, ".") - 1) & "_" & Suffix & ".pdf"
+    
+    ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=GenPDF, _
+        Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas _
+        :=False, OpenAfterPublish:=False
+End Function
+
 Private Function ExportWordAsPDF(Path As String) As String
 '
 ' ExportWordAsPDF Function
