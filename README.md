@@ -19,7 +19,7 @@ Support for:
 
 See below for the flow of the program:
 
-<img src="https://github.com/adrielyeung/macro-workbook/blob/main/img/CoverLetterGenerator_Flow.png" alt="Cover Letter Generator Flow" width="50%" height="50%">
+<img src="https://github.com/adrielyeung/macro-workbook/blob/main/img/CoverLetterGenerator_Flow.png" alt="Cover Letter Generator Flow" width="80%" height="80%">
 
 ### Cover Letter Template Generation 2 - Export to PDF
 After reviewing the macro-generated letter in part 1, batch generate PDF by calling ```PDFUtil.Batch_ExportWordAsPDF```. This looks for all records with status = "GenPDF" and export those Word documents into PDF. After success, will have Status changed to "Done", else error message will be logged into "Generation Message" column.
@@ -72,11 +72,11 @@ After:
 Copy the data from "From" named area to "To" named area and set up Status in "PrepareStatus" named area as "Prepare" for newly copied rows.
 
 ### 3. CopyColumnToNext
-Copy the content of rightmost filled column to the next, increasing the header by 1 if it is a number/date.
+Copy the content of rightmost filled white-coloured column to the next, increasing the header by 1 if it is a number / date.
 
 Option to select:
 1. Number of times to copy
-2. If copy > 1 times, copy header only except last time (Useful for skipping through a few days, e.g. weekend)
+2. If copy > 1 times, copy header only except last time (Useful for skipping through a few days, e.g. weekend / leave days)
 
 Before:
 
@@ -139,8 +139,18 @@ Part of the [Cover Letter Generator project](#cover-letter-template-generation-1
 -----------------
 This file contains Excel macros whose output is in PDF files.
 
-### 1. Batch_, Single_ and ExportWordAsPDF
+### 1. Batch_, Single_ and ExportWordAsPDF Function
 Part of the [Cover Letter Generator project](#cover-letter-template-generation-1---write-cover-letter).
+
+### 2. GenPDF Function
+Export the ActiveSheet of ActiveWorkbook as PDF, allowing for addition of suffix to the end of file name (e.g. name / date).
+
+```EmailUtil.bas```
+-------------------
+This file contains Excel macros whose output is an email.
+
+### 1. GenPDFAndEmail
+Export the ActiveSheet of ActiveWorkbook as PDF, then attach to an Outlook email with parameters (To, Cc, Subject, Body, Attachments), display to user for review and send.
 
 ## Future developments
 Cover Letter Generation: Allow selection of number of items to copy from project template.
