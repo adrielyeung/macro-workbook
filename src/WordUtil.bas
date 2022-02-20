@@ -17,28 +17,85 @@ Sub CreateWordDoc()
 
 End Sub
 
-Sub Batch_ReplaceTagsWithContent()
+Sub Batch_ReplaceTagsWithContent_JobList()
+'
+' Batch_ReplaceTagsWithContent_JobList Sub
+' Batch calling of Function ReplaceTagsWithContent(), finding for records in FeedWb workbook
+' Called from JobListing Excel (FeedWb)
+'
+
+'
+    Dim GeneratorPath As Range
+    Dim FeedWb As Workbook, GeneratorWb As Workbook
+    
+    ' FeedWb is the batch listings Excel
+    Set FeedWb = ActiveWorkbook
+    ' GeneratorPath is the path of the Generator Excel
+    Set GeneratorPath = FeedWb.Names("GeneratorPath").RefersToRange
+    
+    ' Set GeneratorWb as the Generator Excel
+    Set GeneratorWb = Workbooks.Open(GeneratorPath)
+    
+    Batch_ReplaceTagsWithContent FeedWb, GeneratorWb
+
+End Sub
+
+Sub Batch_ReplaceTagsWithContent_Generator()
 '
 ' Batch_ReplaceTagsWithContent Sub
-' Batch calling of Function ReplaceTagsWithContent(), finding for records in path FeedPath
+' Batch calling of Function ReplaceTagsWithContent(), finding for records in FeedWb workbook
+' Called from Generator Excel (GeneratorWb)
+'
+
+'
+    Dim FeedPath As Range
+    Dim FeedWb As Workbook, GeneratorWb As Workbook
+    
+    ' Set GeneratorWb as the Excel holding the template config
+    Set GeneratorWb = ActiveWorkbook
+    ' FeedPath is the path of the batch listings
+    Set FeedPath = GeneratorWb.Names("FeedPath").RefersToRange
+    ' FeedWb is the batch listings Excel
+    Set FeedWb = Workbooks.Open(FeedPath)
+    
+    Batch_ReplaceTagsWithContent FeedWb, GeneratorWb
+    
+End Sub
+
+Sub Single_ReplaceTagsWithContent()
+'
+' Single_ReplaceTagsWithContent Function
+' Single calling of Function ReplaceTagsWithContent()
+'
+
+'
+    Dim OutMsg As String
+    
+    OutMsg = ReplaceTagsWithContent()
+    
+    If Left(OutMsg, 1) = "!" Then
+        MsgBox Prompt:="Finish generating WITH ERROR: " & Mid(OutMsg, 2), Title:="ERROR in Generation"
+    Else
+        MsgBox Prompt:="Finish generating SUCCESS, file location: " & OutMsg, Title:="Finish Generation"
+    End If
+End Sub
+
+Private Sub Batch_ReplaceTagsWithContent(FeedWb As Workbook, GeneratorWb As Workbook)
+'
+' Batch_ReplaceTagsWithContent Sub
+' Batch calling of Function ReplaceTagsWithContent()
 ' with PrepareStatus = "Prepare"
 ' And changing the basic config for each record
 '
 
 '
-    Dim FeedPath As Range, PrepareStatus As Range, Status As Range, BatchConfig As Range, Config As Range
-    Dim TemplateWb As Workbook, FeedWb As Workbook
+    Dim PrepareStatus As Range, Status As Range, BatchConfig As Range, Config As Range
     Dim i As Integer, SucCount As Integer, FailCount As Integer
     Dim OutMsg As String
     
-    ' Set TemplateWb as the Excel holding the template config
-    Set TemplateWb = ActiveWorkbook
-    ' FeedPath is the path of the batch listings
-    Set FeedPath = TemplateWb.Names("FeedPath").RefersToRange
     ' BatchConfig is the cells in the Template Excel to be updated for each batch run
-    Set BatchConfig = TemplateWb.Names("BatchConfig").RefersToRange
-    ' FeedWb is the batch listings Excel
-    Set FeedWb = Workbooks.Open(FeedPath)
+    Set BatchConfig = GeneratorWb.Names("BatchConfig").RefersToRange
+    
     ' PrepareStatus are the cells holding the processing status
     Set PrepareStatus = FeedWb.Names("PrepareStatus").RefersToRange
     ' Error msg from each individual run
@@ -51,7 +108,7 @@ Sub Batch_ReplaceTagsWithContent()
         If Status.Value = "Prepare" Then
             i = Status.Column - 1
             
-            ' Copy each value in FeedWb to TemplateWb
+            ' Copy each value in FeedWb to GeneratorWb
             For Each Config In BatchConfig
                 Config.Value = Status.Offset(0, -i).Value
                 i = i - 1
@@ -60,7 +117,7 @@ Sub Batch_ReplaceTagsWithContent()
                     GoTo Output
                 End If
             Next Config
-            TemplateWb.Activate
+            GeneratorWb.Activate
             ' Call the ReplaceTagsWithContent Function
             OutMsg = ReplaceTagsWithContent()
             If Left(OutMsg, 1) <> "!" Then
@@ -89,24 +146,6 @@ Output:
     End If
 End Sub
 
-Sub Single_ReplaceTagsWithContent()
-'
-' Single_ReplaceTagsWithContent Function
-' Single calling of Function ReplaceTagsWithContent()
-'
-
-'
-    Dim OutMsg As String
-    
-    OutMsg = ReplaceTagsWithContent()
-    
-    If Left(OutMsg, 1) = "!" Then
-        MsgBox Prompt:="Finish generating WITH ERROR: " & Mid(OutMsg, 2), Title:="ERROR in Generation"
-    Else
-        MsgBox Prompt:="Finish generating SUCCESS, file location: " & OutMsg, Title:="Finish Generation"
-    End If
-End Sub
-
 Private Function ReplaceTagsWithContent() As String
 '
 ' ReplaceTagsWithContent Function
@@ -115,32 +154,41 @@ Private Function ReplaceTagsWithContent() As String
 
 '
     Dim Tags As Range, Tag As Range, Content As Range, ListingPath As Range
-    Dim Priority As Range, Order As Range, Field As Range, SearchField As Range, ListItem As Range
-    Dim Missing As Boolean
+    Dim Priority As Range, Order As Range, Field As Range, SearchField As Range
+    Dim ListDesc As Range, ListJobTitle As Range, ListComp As Range
+    Dim Missing As Boolean, ToPoint As Boolean
     Dim RegEx As Object
-    Dim Template As String, NewFile As String, Direc As String
-    Dim CompName As String, ListItemString As String
+    Dim Template As String, NewFile As String, Direc As String, CompName As String
+    Dim ListDescString As String, ListJobTitleString As String, ListCompString As String, PrevJobTitleString As String, PrevCompString As String
     Dim Prefix As String, Suffix As String, Category As String, LastCategory As String, ListCategory As String
-    Dim Phrase As String, Paragraph As String, TagName As String, TagContent As String, Listing As String, ListItemTag As String
+    Dim Point As String, Phrase As String, Paragraph As String, TagName As String, TagContent As String, Listing As String
+    Dim ListDescTag As String, ListJobTitleTag As String, ListCompTag As String
     Dim Random As Double, PhraseRow As Long, FirstInd As Long, LastInd As Long, TagRow As Integer, i As Long, LPDiff As Integer
-    Dim ContentArr() As String
+    Dim NumListItem As Integer
+    Dim ContentArr() As String, UsedList As ArrayList
     
-    Dim TemplateWb As Workbook, ListingWb As Workbook
+    Dim GeneratorWb As Workbook, ListingWb As Workbook
     
     Dim WordApp As Word.Application
     Set WordApp = New Word.Application
     
     Set Tags = Range("Tags")
     Set RegEx = New RegExp
+    Set UsedList = New ArrayList
     
-    ListItemTag = "<ListItem>"
+    ListDescTag = "<ListDesc>"
+    ListCompTag = "<ListComp>"
+    ListJobTitleTag = "<ListJobTitle>"
+    
+    PrevCompTag = "<PrevComp>"
+    PrevJobTitleTag = "<PrevJobTitle>"
     
     ' "!" in first position for an error
     ReplaceTagsWithContent = "!Error in program run, please check code"
     
     ' Open listing file if available
-    Set TemplateWb = ActiveWorkbook
-    Set ListingPath = TemplateWb.Names("ListingPath").RefersToRange
+    Set GeneratorWb = ActiveWorkbook
+    Set ListingPath = GeneratorWb.Names("ListingPath").RefersToRange
     If Not IsEmpty(ListingPath.Value) Then
         If Not Dir(ListingPath.Value) = "" Then
             Set ListingWb = Workbooks.Open(ListingPath)
@@ -149,7 +197,7 @@ Private Function ReplaceTagsWithContent() As String
     
     Missing = False
     
-    TemplateWb.Activate
+    GeneratorWb.Activate
     
     ' Checking if any content field is missing
     For Each Tag In Tags
@@ -173,8 +221,7 @@ Private Function ReplaceTagsWithContent() As String
     Next Tag
     
     If Missing Then
-        MsgBox Prompt:="Please fill in highlighted fields.", Buttons:=vbOKOnly, Title:="Missing Fields"
-        ReplaceTagsWithContent = "!Missing info in Generator config"
+        ReplaceTagsWithContent = "!Missing highlighted fields in Generator config, please check."
         Exit Function
     End If
     
@@ -226,6 +273,13 @@ OpenFile:
         
             Set Content = Tag.Offset(0, 1)
             Content.Value = Trim(Content.Value)
+            
+            If IsNumeric(Tag.Offset(0, 2).Value) Then
+                NumListItem = CInt(Tag.Offset(0, 2).Value)
+            Else
+                NumListItem = 1
+            End If
+            
             ' If tag starts with "B", break into subitems and fill in corresponding "L" tags
             If Left(Tag.Value, 1) = "B" Then
                 If Len(Content.Value) > 0 Then
@@ -317,36 +371,77 @@ OpenFile:
                                 .Apply
                             End With
                             
+                            ' Search in ListingWb, SearchField
                             Set SearchField = ListingWb.Names("SearchField").RefersToRange
-                            Set ListItem = ListingWb.Names("ListItem").RefersToRange
+                            Set ListDesc = ListingWb.Names("ListDesc").RefersToRange
+                            Set ListComp = ListingWb.Names("ListComp").RefersToRange
+                            Set ListJobTitle = ListingWb.Names("ListJobTitle").RefersToRange
                             
+                            ToPoint = False
+                            
+                            ' If found relevant Skill and it is not already used
                             For Each Field In SearchField.Cells
-                                If InStr(1, Field.Value, Content.Value) > 0 Then
-                                    ListItemString = Trim(ListItem.Cells(Field.Row, 1).Value)
-                                    
+                                If InStr(1, Field.Value, Content.Value) > 0 And Not UsedList.Contains(Order.Cells(Field.Row, 1).Value) Then
+                                    If ToPoint Then
+                                        PhraseRow = PhraseRow + 1
+                                        If PhraseRow > LastInd Then
+                                            PhraseRow = FirstInd
+                                        End If
+                                        Point = GeneratorWb.Worksheets("PhraseConfig").Range("Phrases").Cells(PhraseRow, 1).Value
+                                        Point = Replace(Point, Right(Tag.Value, Len(Tag.Value) - 1), Content.Value)
+                                    End If
+                                
+                                    ListDescString = Trim(ListDesc.Cells(Field.Row, 1).Value)
+                                    ListCompString = Trim(ListComp.Cells(Field.Row, 1).Value)
+                                    ListJobTitleString = Trim(ListJobTitle.Cells(Field.Row, 1).Value)
+                                    UsedList.Add Order.Cells(Field.Row, 1).Value
+                                                                        
                                     RegEx.Pattern = "-+\s"
                                     RegEx.Global = True
                                     
                                     ' Remove all bullet points
-                                    ListItemString = RegEx.Replace(ListItemString, "")
+                                    ListDescString = RegEx.Replace(ListDescString, "")
                                     
-                                    ListItemString = StrConv(Left(ListItemString, 1), vbLowerCase) & Right(ListItemString, Len(ListItemString) - 1)
+                                    ListDescString = StrConv(Left(ListDescString, 1), vbLowerCase) & Right(ListDescString, Len(ListDescString) - 1)
                                     
                                     ' Join up multiple items
-                                    While InStr(1, ListItemString, vbLf) > 0
-                                        Phrase = Replace(Phrase, ListItemTag, Left(ListItemString, InStr(1, ListItemString, vbLf) - 1) & ", <ListItem>")
-                                        ListItemString = Mid(ListItemString, InStr(1, ListItemString, vbLf) + 1)
-                                        ListItemString = StrConv(Left(ListItemString, 1), vbLowerCase) & Right(ListItemString, Len(ListItemString) - 1)
+                                    While InStr(1, ListDescString, vbLf) > 0
+                                        If ToPoint Then
+                                            Point = Replace(Point, ListDescTag, Left(ListDescString, InStr(1, ListDescString, vbLf) - 1) & ", " & ListDescTag)
+                                        Else
+                                            Phrase = Replace(Phrase, ListDescTag, Left(ListDescString, InStr(1, ListDescString, vbLf) - 1) & ", " & ListDescTag)
+                                        End If
+                                        
+                                        ListDescString = Mid(ListDescString, InStr(1, ListDescString, vbLf) + 1)
+                                        ListDescString = StrConv(Left(ListDescString, 1), vbLowerCase) & Right(ListDescString, Len(ListDescString) - 1)
                                     Wend
                                     
-                                    Phrase = Replace(Phrase, ListItemTag, ListItemString)
-                                    Exit For
+                                    If ToPoint Then
+                                        Point = Replace(Point, ListDescTag, ListDescString)
+                                        Point = Replace(Point, ListCompTag, ListCompString)
+                                        Point = Replace(Point, ListJobTitleTag, ListJobTitleString)
+                                        Phrase = Phrase & " " & Point
+                                    Else
+                                        Phrase = Replace(Phrase, ListDescTag, ListDescString)
+                                        Phrase = Replace(Phrase, ListCompTag, ListCompString)
+                                        Phrase = Replace(Phrase, ListJobTitleTag, ListJobTitleString)
+                                    End If
+                                    
+                                    ToPoint = True
+                                    
+                                    NumListItem = NumListItem - 1
+                                    If NumListItem <= 0 Then
+                                        Exit For
+                                    End If
                                 End If
                             Next Field
                             
                             ' If above replace failed, find relevant item in Generator config to replace
-                            If InStr(1, Phrase, ListItemTag) > 0 Then
-                                Phrase = Replace(Phrase, ListItemTag, Tag.Offset(LPDiff, 1).Value)
+                            If InStr(1, Phrase, ListDescTag) > 0 Then
+                                Phrase = Replace(Phrase, ListDescTag, Tag.Offset(LPDiff, 1).Value)
+                                ' Replace ListCompTag and ListJobTitleTag with previous company and previous job title tags
+                                Phrase = Replace(Phrase, ListCompTag, PrevCompTag)
+                                Phrase = Replace(Phrase, ListJobTitleTag, PrevJobTitleTag)
                             End If
                             
                             Order.Worksheet.AutoFilter.Sort.SortFields.Clear
@@ -360,7 +455,7 @@ OpenFile:
                                 .Apply
                             End With
                             
-                            TemplateWb.Activate
+                            GeneratorWb.Activate
                         End If
                     End If
                     

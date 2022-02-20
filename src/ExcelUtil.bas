@@ -51,16 +51,22 @@ Sub CopyDataToSheet()
     PrepareStatus.Cells(2, 1).Copy
     
     ' Set end cell for "Status" and "Message" cols
-    PrepareStatus.Cells(CopyFrom.Rows.Count, 1).Value = "End"
-    PrepareStatus.Cells(CopyFrom.Rows.Count - 1, 1).Offset(0, 1).Value = ""
-    PrepareStatus.Cells(CopyFrom.Rows.Count, 1).Offset(0, 1).Value = "End"
-    PrepareStatus.Cells(CopyFrom.Rows.Count, 1).PasteSpecial Paste:=xlPasteFormats
+    With PrepareStatus.Cells(CopyFrom.Rows.Count, 1)
+        .Value = "End"
+        .PasteSpecial Paste:=xlPasteFormats
+        .Offset(0, 1).Value = "End"
+        .Offset(0, 2).Value = "End"
+    End With
     
     ' Set newly added rows with status "Prepare" until found previously done rows
     For i = CopyFrom.Rows.Count - 1 To 2 Step -1
         If IsEmpty(PrepareStatus.Cells(i, 1)) Or PrepareStatus.Cells(i, 1).Value = "End" Then
-            PrepareStatus.Cells(i, 1).Value = "Prepare"
-            PrepareStatus.Cells(i, 1).PasteSpecial Paste:=xlPasteFormats
+            With PrepareStatus.Cells(i, 1)
+                .Value = "Prepare"
+                .PasteSpecial Paste:=xlPasteFormats
+                .Offset(0, 1).Value = ""
+                .Offset(0, 2).Value = ""
+            End With
         Else
             Exit For
         End If
