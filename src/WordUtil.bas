@@ -165,7 +165,7 @@ Private Function ReplaceTagsWithContent() As String
     Dim ListDescTag As String, ListJobTitleTag As String, ListCompTag As String
     Dim Random As Double, PhraseRow As Long, FirstInd As Long, LastInd As Long, TagRow As Integer, i As Long, LPDiff As Integer
     Dim NumListItem As Integer
-    Dim ContentArr() As String
+    Dim ContentArr() As String, UsedList As ArrayList
     
     Dim GeneratorWb As Workbook, ListingWb As Workbook
     
@@ -174,6 +174,7 @@ Private Function ReplaceTagsWithContent() As String
     
     Set Tags = Range("Tags")
     Set RegEx = New RegExp
+    Set UsedList = New ArrayList
     
     ListDescTag = "<ListDesc>"
     ListCompTag = "<ListComp>"
@@ -378,8 +379,9 @@ OpenFile:
                             
                             ToPoint = False
                             
+                            ' If found relevant Skill and it is not already used
                             For Each Field In SearchField.Cells
-                                If InStr(1, Field.Value, Content.Value) > 0 Then
+                                If InStr(1, Field.Value, Content.Value) > 0 And Not UsedList.Contains(Order.Cells(Field.Row, 1).Value) Then
                                     If ToPoint Then
                                         PhraseRow = PhraseRow + 1
                                         If PhraseRow > LastInd Then
@@ -392,6 +394,7 @@ OpenFile:
                                     ListDescString = Trim(ListDesc.Cells(Field.Row, 1).Value)
                                     ListCompString = Trim(ListComp.Cells(Field.Row, 1).Value)
                                     ListJobTitleString = Trim(ListJobTitle.Cells(Field.Row, 1).Value)
+                                    UsedList.Add Order.Cells(Field.Row, 1).Value
                                                                         
                                     RegEx.Pattern = "-+\s"
                                     RegEx.Global = True
