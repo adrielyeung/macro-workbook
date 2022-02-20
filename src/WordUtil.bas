@@ -156,14 +156,15 @@ Private Function ReplaceTagsWithContent() As String
     Dim Tags As Range, Tag As Range, Content As Range, ListingPath As Range
     Dim Priority As Range, Order As Range, Field As Range, SearchField As Range
     Dim ListDesc As Range, ListJobTitle As Range, ListComp As Range
-    Dim Missing As Boolean
+    Dim Missing As Boolean, ToPoint As Boolean
     Dim RegEx As Object
     Dim Template As String, NewFile As String, Direc As String, CompName As String
     Dim ListDescString As String, ListJobTitleString As String, ListCompString As String, PrevJobTitleString As String, PrevCompString As String
     Dim Prefix As String, Suffix As String, Category As String, LastCategory As String, ListCategory As String
-    Dim Phrase As String, Paragraph As String, TagName As String, TagContent As String, Listing As String
+    Dim Point As String, Phrase As String, Paragraph As String, TagName As String, TagContent As String, Listing As String
     Dim ListDescTag As String, ListJobTitleTag As String, ListCompTag As String
     Dim Random As Double, PhraseRow As Long, FirstInd As Long, LastInd As Long, TagRow As Integer, i As Long, LPDiff As Integer
+    Dim NumListItem As Integer
     Dim ContentArr() As String
     
     Dim GeneratorWb As Workbook, ListingWb As Workbook
@@ -271,6 +272,13 @@ OpenFile:
         
             Set Content = Tag.Offset(0, 1)
             Content.Value = Trim(Content.Value)
+            
+            If IsNumeric(Tag.Offset(0, 2).Value) Then
+                NumListItem = CInt(Tag.Offset(0, 2).Value)
+            Else
+                NumListItem = 1
+            End If
+            
             ' If tag starts with "B", break into subitems and fill in corresponding "L" tags
             If Left(Tag.Value, 1) = "B" Then
                 If Len(Content.Value) > 0 Then
@@ -368,8 +376,19 @@ OpenFile:
                             Set ListComp = ListingWb.Names("ListComp").RefersToRange
                             Set ListJobTitle = ListingWb.Names("ListJobTitle").RefersToRange
                             
+                            ToPoint = False
+                            
                             For Each Field In SearchField.Cells
                                 If InStr(1, Field.Value, Content.Value) > 0 Then
+                                    If ToPoint Then
+                                        PhraseRow = PhraseRow + 1
+                                        If PhraseRow > LastInd Then
+                                            PhraseRow = FirstInd
+                                        End If
+                                        Point = GeneratorWb.Worksheets("PhraseConfig").Range("Phrases").Cells(PhraseRow, 1).Value
+                                        Point = Replace(Point, Right(Tag.Value, Len(Tag.Value) - 1), Content.Value)
+                                    End If
+                                
                                     ListDescString = Trim(ListDesc.Cells(Field.Row, 1).Value)
                                     ListCompString = Trim(ListComp.Cells(Field.Row, 1).Value)
                                     ListJobTitleString = Trim(ListJobTitle.Cells(Field.Row, 1).Value)
@@ -384,15 +403,33 @@ OpenFile:
                                     
                                     ' Join up multiple items
                                     While InStr(1, ListDescString, vbLf) > 0
-                                        Phrase = Replace(Phrase, ListDescTag, Left(ListDescString, InStr(1, ListDescString, vbLf) - 1) & ", <ListDesc>")
+                                        If ToPoint Then
+                                            Point = Replace(Point, ListDescTag, Left(ListDescString, InStr(1, ListDescString, vbLf) - 1) & ", " & ListDescTag)
+                                        Else
+                                            Phrase = Replace(Phrase, ListDescTag, Left(ListDescString, InStr(1, ListDescString, vbLf) - 1) & ", " & ListDescTag)
+                                        End If
+                                        
                                         ListDescString = Mid(ListDescString, InStr(1, ListDescString, vbLf) + 1)
                                         ListDescString = StrConv(Left(ListDescString, 1), vbLowerCase) & Right(ListDescString, Len(ListDescString) - 1)
                                     Wend
                                     
-                                    Phrase = Replace(Phrase, ListDescTag, ListDescString)
-                                    Phrase = Replace(Phrase, ListCompTag, ListCompString)
-                                    Phrase = Replace(Phrase, ListJobTitleTag, ListJobTitleString)
-                                    Exit For
+                                    If ToPoint Then
+                                        Point = Replace(Point, ListDescTag, ListDescString)
+                                        Point = Replace(Point, ListCompTag, ListCompString)
+                                        Point = Replace(Point, ListJobTitleTag, ListJobTitleString)
+                                        Phrase = Phrase & " " & Point
+                                    Else
+                                        Phrase = Replace(Phrase, ListDescTag, ListDescString)
+                                        Phrase = Replace(Phrase, ListCompTag, ListCompString)
+                                        Phrase = Replace(Phrase, ListJobTitleTag, ListJobTitleString)
+                                    End If
+                                    
+                                    ToPoint = True
+                                    
+                                    NumListItem = NumListItem - 1
+                                    If NumListItem <= 0 Then
+                                        Exit For
+                                    End If
                                 End If
                             Next Field
                             
