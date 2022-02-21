@@ -147,12 +147,20 @@ Export the ActiveSheet of ActiveWorkbook as PDF, allowing for addition of suffix
 
 ```EmailUtil.bas```
 -------------------
-This file contains Excel macros whose output is an email.
+This file contains Excel macros whose output is an email in Outlook.
 
 ### 1. GenPDFAndEmail
 Export the ActiveSheet of ActiveWorkbook as PDF, then attach to an Outlook email with parameters (To, Cc, Subject, Body, Attachments), display to user for review and send.
 
-## Future developments
-Cover Letter Generation: Allow selection of number of items to copy from project template.
+### 2. LeaveEmail_Dates
+Create Outlook email to alert the team of leave between FromDate and ToDate, reading From Date and To Date from Excel config (```config/LeaveEmail.xlsx```).
 
-FillExcelForm.bas: Create another sub for generating PDF copy and attaching to email.
+<img src="https://github.com/adrielyeung/macro-workbook/blob/main/img/LeaveEmail.png" alt="LeaveEmail" width="50%" height="50%">
+
+### 3. LeaveEmail_LeaveLog
+Create Outlook email to alert the team of next available period of leave within a month based on a Team Leave Plan Excel (example ```config/LeavePlan.xlsx```), where each column represent a day and each row represent a teammate.
+
+<img src="https://github.com/adrielyeung/macro-workbook/blob/main/img/LeavePlan.png" alt="LeavePlan" width="50%" height="50%">
+
+## Future developments
+Feel free to suggest!
