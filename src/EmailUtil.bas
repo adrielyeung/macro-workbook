@@ -36,8 +36,7 @@ Sub LeaveEmail_LeaveLog()
     Set LeaveLogWb = Workbooks.Open(Range("TempLog").Value)
     Set NameRange = Range("Names")
     Set DateRange = Range("Dates")
-    
-    
+        
     ' Find employee name record and current date column
     RowNum = NameRange.Find(Name, , xlValues, xlPart).Row
     ColNum = DateRange.Find(Date, , xlFormulas, xlPart).Column
