@@ -1,4 +1,44 @@
 Attribute VB_Name = "EmailUtil"
+Sub GenPDFAndEmail()
+'
+' GenPDFAndEmail Sub
+' Export the ActiveSheet of ActiveWorkbook as PDF,
+' then create Outlook email with parameters, ready for send
+'
+
+    Dim ObjOutlook As Object, ObjEmail As Object
+    Dim PdfName As String
+
+    ' Export as PDF
+    PdfName = PDFUtil.GenPDF("<Suffix>")
+
+    ' Create Outlook object
+    Set ObjOutlook = CreateObject("Outlook.Application")
+
+    ' Create email object
+    Set ObjEmail = ObjOutlook.CreateItem(olMailItem)
+
+    ' Set parameters
+    With ObjEmail
+        .To = ""
+        .Cc = ""
+        .Subject = ""
+        .Body = "Dear <ReceiverName>," & vbNewLine & vbNewLine & _
+                "Attached please find my <document>."
+                ' & ObjEmail.Body - to insert text signature directly
+        .Attachments.Add (PdfName)
+        .Display        ' Display the message in Outlook.
+        ' Move to end of email to insert default signature manually
+        SendKeys "^+{END}", True
+        SendKeys "{END}", True
+        SendKeys "{NUMLOCK}"
+    End With
+
+    ' Clear objects at end
+    Set ObjEmail = Nothing
+    Set ObjOutlook = Nothing
+End Sub
+
 Sub LeaveEmail_Dates()
 '
 ' LeaveEmail_Dates Sub
@@ -36,7 +76,7 @@ Sub LeaveEmail_LeaveLog()
     Set LeaveLogWb = Workbooks.Open(Range("TempLog").Value)
     Set NameRange = Range("Names")
     Set DateRange = Range("Dates")
-        
+    
     ' Find employee name record and current date column
     RowNum = NameRange.Find(Name, , xlValues, xlPart).Row
     ColNum = DateRange.Find(Date, , xlFormulas, xlPart).Column
@@ -50,21 +90,22 @@ Sub LeaveEmail_LeaveLog()
         ' Find from date
         If Len(Trim(Cells(RowNum, i))) > 0 Then
             FromDate = DateRange.Cells(1, i).Value
-            If Cells(RowNum, i) = "A" Then
+            If Cells(RowNum, i).Value = "A" Then
                 FromAmPm = "AM"
                 ToDate = FromDate
                 ToAmPm = "AM"
                 Exit For
-            ElseIf Cells(RowNum, i) = "P" Then
+            ElseIf Cells(RowNum, i).Value = "P" Then
                 FromAmPm = "PM"
             End If
             
+            ToCol = i
             i = i + 1
             
             ' Loop for whole leave period
             ' until next day without leave or weekend/holiday (greyed colour 12566463)
-            While Cells(RowNum, i) = "F" Or Cells(RowNum, i) = "CL" Or _
-                Cells(RowNum, i) = "BL" Or Cells(RowNum, i).Interior.Color = 12566463
+            While Cells(RowNum, i).Value = "F" Or Cells(RowNum, i).Value = "CL" Or _
+                Cells(RowNum, i).Value = "BL" Or Cells(RowNum, i).Interior.Color = 12566463
                 ' Only include day if it is a work day
                 If Not Cells(RowNum, i).Interior.Color = 12566463 Then
                     ToCol = i
@@ -73,7 +114,7 @@ Sub LeaveEmail_LeaveLog()
             Wend
             
             ' Handle any half day leaves at the end of period
-            If Cells(RowNum, i) = "A" Then
+            If Cells(RowNum, i).Value = "A" Then
                 ToCol = i
                 ToAmPm = "AM"
             End If
@@ -96,46 +137,6 @@ Sub LeaveEmail_LeaveLog()
     ' Kill Range("TempLog").Value
     
     LeaveEmail FromDate, ToDate, FromAmPm, ToAmPm
-End Sub
-
-Sub GenPDFAndEmail()
-'
-' GenPDFAndEmail Sub
-' Export the ActiveSheet of ActiveWorkbook as PDF,
-' then create Outlook email with parameters, ready for send
-'
-
-    Dim ObjOutlook As Object, ObjEmail As Object
-    Dim PdfName As String
-    
-    ' Export as PDF
-    PdfName = PDFUtil.GenPDF("<Suffix>")
-    
-    ' Create Outlook object
-    Set ObjOutlook = CreateObject("Outlook.Application")
-    
-    ' Create email object
-    Set ObjEmail = ObjOutlook.CreateItem(olMailItem)
-    
-    ' Set parameters
-    With ObjEmail
-        .To = ""
-        .Cc = ""
-        .Subject = ""
-        .Body = "Dear <ReceiverName>," & vbNewLine & vbNewLine & _
-                "Attached please find my <document>."
-                ' & ObjEmail.Body - to insert text signature directly
-        .Attachments.Add (PdfName)
-        .Display        ' Display the message in Outlook.
-        ' Move to end of email to insert default signature manually
-        SendKeys "^+{END}", True
-        SendKeys "{END}", True
-        SendKeys "{NUMLOCK}"
-    End With
-    
-    ' Clear objects at end
-    Set ObjEmail = Nothing
-    Set ObjOutlook = Nothing
 End Sub
 
 Private Sub LeaveEmail(FromDate As String, ToDate As String, FromAmPm As String, ToAmPm As String)
@@ -221,5 +222,4 @@ Private Sub LeaveEmail(FromDate As String, ToDate As String, FromAmPm As String,
     Set ObjEmail = Nothing
     Set ObjOutlook = Nothing
 End Sub
-
 
