@@ -38,8 +38,7 @@ Steps:
 
 <img src="https://github.com/adrielyeung/macro-workbook/blob/main/img/CoverLetterGenerator_Step3.png" alt="Cover Letter Generator Step 3" width="50%" height="50%">
 
-```FindKeyword.bas```
-------------------------
+## ```FindKeyword.bas```
 This is a macro used to search for a number of keywords in the config file (with comma-separated keyword values).
 
 For each row, the found keyword(s) in search range will be put into the first empty column (Result Column), as a comma-separated list.
@@ -53,8 +52,7 @@ Inputs (via InputBox / MsgBox):
 
 All 3 inputs are compulsory.
 
-```ExcelUtil.bas```
--------------------
+## ```ExcelUtil.bas```
 This file contains macros which operate in Excel files.
 
 ### 1. FillExcelForm
@@ -125,8 +123,7 @@ After:
 
 <img src="https://github.com/adrielyeung/macro-workbook/blob/main/img/MergeEmptyVertical_after.png" alt="MergeEmptyVertical_after" width="50%" height="50%">
 
-```WordUtil.bas```
-------------------
+## ```WordUtil.bas```
 This file contains Excel macros whose output is in Word files.
 
 ### 1. CreateWordDoc
@@ -135,8 +132,7 @@ Creates a Word document.
 ### 2. Batch_, Single_ and ReplaceTagsWithContent Function
 Part of the [Cover Letter Generator project](#cover-letter-template-generation-1---write-cover-letter).
 
-```PDFUtil.bas```
------------------
+## ```PDFUtil.bas```
 This file contains Excel macros whose output is in PDF files.
 
 ### 1. Batch_, Single_ and ExportWordAsPDF Function
@@ -145,15 +141,14 @@ Part of the [Cover Letter Generator project](#cover-letter-template-generation-1
 ### 2. GenPDF Function
 Export the ActiveSheet of ActiveWorkbook as PDF, allowing for addition of suffix to the end of file name (e.g. name / date).
 
-```EmailUtil.bas```
--------------------
+## ```EmailUtil.bas```
 This file contains Excel macros whose output is an email in Outlook.
 
 ### 1. GenPDFAndEmail
 Export the ActiveSheet of ActiveWorkbook as PDF, then attach to an Outlook email with parameters (To, Cc, Subject, Body, Attachments), display to user for review and send.
 
 ### 2. LeaveEmail_Dates
-Create Outlook email to alert the team of leave between FromDate and ToDate, reading From Date and To Date from Excel config (```config/LeaveEmail.xlsx```).
+Create Outlook email to alert the team of your leave plan between FromDate and ToDate, reading From Date and To Date from Excel config (```config/LeaveEmail.xlsx```).
 
 <img src="https://github.com/adrielyeung/macro-workbook/blob/main/img/LeaveEmail.png" alt="LeaveEmail" width="50%" height="50%">
 
@@ -161,6 +156,32 @@ Create Outlook email to alert the team of leave between FromDate and ToDate, rea
 Create Outlook email to alert the team of next available period of leave within a month based on a Team Leave Plan Excel (example ```config/LeavePlan.xlsx```), where each column represent a day and each row represent a teammate.
 
 <img src="https://github.com/adrielyeung/macro-workbook/blob/main/img/LeavePlan.png" alt="LeavePlan" width="50%" height="50%">
+
+## ```HyperlinkUtil.bas```
+This file contains Excel macros whose output are hyperlinks between Excel columns / sheets.
+
+For example, we would start with a "content page" sheet, like below.
+
+<img src="https://github.com/adrielyeung/macro-workbook/blob/main/img/HyperlinkUtil_before.png" alt="HyperlinkUtil_before" width="50%" height="50%">
+
+### 1. AddHyperlinkToColumn
+Add a hyperlink to a specific column in same sheet. This is particularly useful navigating within a sheet with many columns.
+
+In this example, we add a hyperlink from column B to column D for each record (row).
+
+### 2. NavigationHyperlink
+Create a child sheet and adds a hyperlink to / from the child sheet's cell A1.
+
+In this example, we add a hyperlink from column C to a child sheet for each record (row).
+
+### 3. UpdateHyperlink
+Update the column linked for hyperlink back to content page from the child sheet. Used when the columns in the content sheet are changed.
+
+After running #1 and #2 above, the results are as below.
+
+<img src="https://github.com/adrielyeung/macro-workbook/blob/main/img/HyperlinkUtil_after_content.png" alt="HyperlinkUtil_before" width="50%" height="50%">
+
+<img src="https://github.com/adrielyeung/macro-workbook/blob/main/img/HyperlinkUtil_after_child.png" alt="HyperlinkUtil_before" width="50%" height="50%">
 
 ## Future developments
 Feel free to suggest!
