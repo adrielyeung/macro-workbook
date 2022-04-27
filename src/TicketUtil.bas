@@ -54,7 +54,7 @@ Sub RenewTicket()
             ' My ticket
             If Range("I" & CurRow).Value = "Adriel" Then
                 ' Status not closed and due today or before
-                If Range("L" & CurRow).Value <= Date + 1 _
+                If Range("L" & CurRow).Value <= Date + FindNextWorkday() - 1 _
                     And Not Range("F" & CurRow).Value = "Closed" Then
                     Range("L" & CurRow).Value = Date + FindNextWorkday()
                 End If
@@ -74,7 +74,7 @@ Function FindNextWorkday()
 '
 
 '
-    If Weekday(Date, vbMonday) >= 5 Then
+    If Weekday(Date, vbMonday) >= 4 Then
         FindNextWorkday = 4
     Else
         FindNextWorkday = 2
