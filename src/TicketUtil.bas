@@ -1,66 +1,70 @@
 Attribute VB_Name = "TicketUtil"
 Sub OpenCloseTicket()
 ' OpenCloseTicket Macro
-' Open/Close ticket records searching for ad-hoc ticket number (format AHxxxxx, where x is a digit) as input.
+' Open/Close ticket records searching for ticket number as input.
 '
 
 '
     Dim TicketNum As String, TicketRow As Long
     
     Do While True
-        TicketNum = InputBox("Enter ticket number (AHxxxxx):", "Ticket #")
-        If IsNumeric(Mid(TicketNum, 3)) And Left(TicketNum, 2) = "AH" Then
+        TicketNum = InputBox("Enter ticket number:", "Ticket #")
+        If IsNumeric(TicketNum) Then
             Exit Do
         End If
-        If MsgBox("Please enter a valid ticket number (AHxxxxx).", vbOKCancel, "Number required") = vbCancel Then Exit Sub
+        If MsgBox("Please enter a valid ticket number.", vbOKCancel, "Number required") = vbCancel Then Exit Sub
     Loop
     
-    TicketRow = ExcelUtil.MatchLast(TicketNum, Range("D:D"), 1)
+    TicketRow = ExcelUtil.MatchLast(TicketNum, Range("TicketNum"), 1)
     
-    If Len(Range("I" & TicketRow).Value) = 0 Then
-        Range("F" & TicketRow).Value = "Working in progress"
-        Range("I" & TicketRow).Value = "Adriel"
-        Range("J" & TicketRow).Value = "Other systems"
-        Range("K" & TicketRow).Value = Date
-        Range("L" & TicketRow).Value = Date + FindNextWorkday()
-        Range("M" & TicketRow).Value = "50%"
+    ' Ticket not found, exit
+    If TicketRow <= 0 Then
+        MsgBox "Ticket #" & TicketNum & " not found.", vbOKOnly, "Ticket not found"
+        Exit Sub
+    End If
+    
+    ' Check if ticket is already opened (assigned to person)
+    If Len(Range("Assignee").Cells(TicketRow, 1).Value) = 0 Then
+        Range("Status").Cells(TicketRow, 1).Value = "Working in progress"
+        Range("Assignee").Cells(TicketRow, 1).Value = Range("Name").Value
+        Range("UpdateDateTime").Cells(TicketRow, 1).Value = Date
+        Range("ExpectedDateTime").Cells(TicketRow, 1).Value = Date + FindNextWorkday()
         MsgBox "Ticket #" & TicketNum & " opened.", vbOKOnly, "Ticket opened"
     Else
-        Range("F" & TicketRow).Value = "Closed"
-        Range("G" & TicketRow).Value = Date
-        Range("M" & TicketRow).Value = "100%"
+        Range("Status").Cells(TicketRow, 1).Value = "Closed"
+        Range("UpdateDateTime").Cells(TicketRow, 1).Value = Date
         MsgBox "Ticket #" & TicketNum & " closed.", vbOKOnly, "Ticket closed"
     End If
 End Sub
 Sub RenewTicket()
 '
 ' RenewTicket Macro
-' Renew ad-hoc tickets records assigned to me that are due today or before.
+' Renew tickets records assigned to me that are due today or before.
 '
 
 '
-    Dim curRow As Integer, EndRow As Integer
-    curRow = ActiveSheet.UsedRange.Rows.count
+    Dim CurRow As Integer, EndRow As Integer
+    CurRow = ActiveSheet.UsedRange.Rows.count
     EndRow = 2
     
-    While curRow >= EndRow
+    While CurRow >= EndRow
         ' Valid ticket
-        If Len(Range("D" & curRow).Value) > 0 Then
+        If Len(Range("TicketNum").Cells(CurRow, 1).Value) > 0 Then
             ' Only check last 100 valid tickets
-            If EndRow = 2 Then
-                EndRow = curRow - 100
+            If EndRow = 2 And CurRow - 100 > 2 Then
+                EndRow = CurRow - 100
             End If
             
             ' My ticket
-            If Range("I" & curRow).Value = "Adriel" Then
+            If Range("Assignee").Cells(CurRow, 1).Value = Range("Name").Value Then
                 ' Status not closed and due today or before
-                If Range("L" & curRow).Value <= Date + FindNextWorkday() - 1 _
-                    And Not Range("F" & curRow).Value = "Closed" Then
-                    Range("L" & curRow).Value = Date + FindNextWorkday()
+                If Range("ExpectedDateTime").Cells(CurRow, 1).Value <= Date + FindNextWorkday() - 1 _
+                    And Not Range("Status").Cells(CurRow, 1).Value = "Closed" Then
+                    Range("ExpectedDateTime").Cells(CurRow, 1).Value = Date + FindNextWorkday()
                 End If
             End If
         End If
-        curRow = curRow - 1
+        CurRow = CurRow - 1
     Wend
     
     MsgBox "Renewed your tickets successfully.", vbOKOnly, "Tickets renewed"
@@ -86,7 +90,7 @@ Sub ListEmailSubject()
     Dim lastRunDateTime As Date
     Dim keyword As Range, sender As Range
     Dim sh As Worksheet, emailSh As Worksheet
-    Dim searchLimit As Long, curRow As Long, firstRow As Long, count As Long
+    Dim searchLimit As Long, CurRow As Long, firstRow As Long, count As Long
     Dim validSender As Boolean, allFilterKeywordRemoved As Boolean
     
     Set sh = ActiveWorkbook.Worksheets("Config")
@@ -105,8 +109,8 @@ Sub ListEmailSubject()
     Set flags = sh.Range("Flag")
     Set flagKeywords = sh.Range("FlagKeywords")
     lastRunDateTime = CDate(sh.Range("LastRunDateTime"))
-    curRow = emailSh.UsedRange.Rows.count
-    firstRow = emailSh.Range("TicketNum").Cells(curRow, 1).Value + 1
+    CurRow = emailSh.UsedRange.Rows.count
+    firstRow = emailSh.Range("TicketNum").Cells(CurRow, 1).Value + 1
     count = 0
 
     'Assign the folder to a variable
@@ -155,20 +159,20 @@ Sub ListEmailSubject()
                         For Each keyword In containKeywords
                             ' Also check that subject do not already exist
                             If Len(keyword.Value) > 0 And InStr(1, Left(emailBody, searchLimit), keyword.Value, vbTextCompare) > 0 And _
-                                MatchLast(emailSubject, emailSh.Range("Subject"), curRow, 1) = 0 Then
-                                curRow = curRow + 1
+                                MatchLast(emailSubject, emailSh.Range("Subject"), CurRow, 1) = 0 Then
+                                CurRow = CurRow + 1
                                 count = count + 1
-                                emailSh.Range("TicketNum").Cells(curRow, 1).Value = _
-                                    emailSh.Range("TicketNum").Cells(curRow - 1, 1).Value + 1
-                                emailSh.Range("Subject").Cells(curRow, 1).Value = emailSubject
-                                emailSh.Range("ReceivedDateTime").Cells(curRow, 1).Value = outItem.ReceivedTime
+                                emailSh.Range("TicketNum").Cells(CurRow, 1).Value = _
+                                    emailSh.Range("TicketNum").Cells(CurRow - 1, 1).Value + 1
+                                emailSh.Range("Subject").Cells(CurRow, 1).Value = emailSubject
+                                emailSh.Range("ReceivedDateTime").Cells(CurRow, 1).Value = outItem.ReceivedTime
                                 
                                 For Each flag In flags
                                     Set flagKeyword = flag.Offset(0, 1)
                                     While Len(flagKeyword.Value) > 0
                                         If InStr(1, emailSubject, flagKeyword.Value, vbTextCompare) > 0 Then
 '                                            InStr(1, Left(emailBody, searchLimit), flagKeyword.Value, vbTextCompare) > 0 Then
-                                            emailSh.Range(flag.Value).Cells(curRow, 1) = "Y"
+                                            emailSh.Range(flag.Value).Cells(CurRow, 1) = "Y"
                                         End If
                                         Set flagKeyword = flagKeyword.Offset(0, 1)
                                     Wend
@@ -190,7 +194,7 @@ Sub ListEmailSubject()
         "New tickets count: " & count & vbNewLine & vbNewLine
     
     If count > 0 Then
-        outMessage = outMessage & "#" & firstRow & " to #" & emailSh.Range("TicketNum").Cells(curRow, 1).Value
+        outMessage = outMessage & "#" & firstRow & " to #" & emailSh.Range("TicketNum").Cells(CurRow, 1).Value
     End If
     
     MsgBox outMessage
