@@ -183,5 +183,27 @@ After running #1 and #2 above, the results are as below.
 
 <img src="https://github.com/adrielyeung/macro-workbook/blob/main/img/HyperlinkUtil_after_child.png" alt="HyperlinkUtil_before" width="50%" height="50%">
 
+## ```TicketUtil.bas```
+This file contains Excel macros which works with a ticket logging Excel.
+
+<img src="https://github.com/adrielyeung/macro-workbook/blob/main/img/TicketLogFromEmail.png" alt="" width="100%" height="50%">
+
+### 1. OpenCloseTicket
+Pops up an InputBox to prompt users to input the ticket number. If the ticket is not assigned to anybody, assign it to yourself (taking the name in "Your name" field in Config sheet). If it is assigned, then set the "Status" to close.
+
+### 2. RenewTicket
+Checks the latest 100 tickets for the expected complete date. If it is within tomorrow, then set to next working day after tomorrow.
+
+### 3. ListEmailSubject
+Connect to Outlook mailbox listed in "Login email" field in Config sheet, copy the subject of all emails received in "Folder" field from names in "From email" field, containing keywords in "Contains" within the first "Limit to first # chars" chars.
+
+The program removes unessential words like "RE:", "FW:", "\[External\]" and other custom filter out words in "Subject filter out". After removal, it checks with existing subjects in "Email" sheet, and will not log duplicates.
+
+Additionally, you may define extra flags for following up in the "Flag" and "Keywords" fields. Please deifne a named column for flagging, example as below using Name Manager.
+
+<img src="https://github.com/adrielyeung/macro-workbook/blob/main/img/TicketLogFromEmail_Flag.png" alt="" width="100%" height="50%">
+
+If the email subject contains any keywords, it will be flagged in the named column ("Y").
+
 ## Future developments
 Feel free to suggest!
